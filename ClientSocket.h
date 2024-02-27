@@ -2,7 +2,7 @@
 #define __CLIENTSOCKET_H__
 
 #include <string>
-
+#include <stdexcept> 
 #include "Socket.h"
 
 

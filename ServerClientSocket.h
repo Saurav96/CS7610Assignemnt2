@@ -2,6 +2,7 @@
 #define __SERVERCLIENTSOCKET_H__
 
 #include <string>
+#include <stdexcept> 
 #include "Socket.h"
 
 

@@ -2,6 +2,7 @@
 #define __SERVERPEERINFO_H__
 
 #include<string>
+#include<vector>
 
 class PeerInfo {
     int id = 0;
