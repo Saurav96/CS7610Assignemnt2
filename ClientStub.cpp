@@ -3,7 +3,13 @@
 ClientStub::ClientStub() {}
 
 int ClientStub::Init(std::string ip, int port) {
-	return socket.Init(ip, port);	
+	try{
+		return socket.Init(ip, port);
+	}
+	catch (const std::runtime_error& e){
+		std::cout<<"Oops!! Server is down!!"<<std::endl;
+		return 0;
+	}	
 }
 
 LaptopInfo ClientStub::OrderLaptop(CustomerRequests request) {
@@ -12,7 +18,6 @@ LaptopInfo ClientStub::OrderLaptop(CustomerRequests request) {
 	int size;
 	request.Marshal(buffer);
 	size = request.Size();
-	std::cout<<"Client Order "<< size<<std::endl;
 	if (socket.Send(buffer, size, 0)) {
 		size = info.Size();
 		if (socket.Recv(buffer, size, 0)) {

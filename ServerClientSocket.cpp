@@ -13,7 +13,7 @@ int ServerClientSocket::Init(std::string ip, int port) {
 	struct sockaddr_in addr;
 	fd_ = socket(AF_INET, SOCK_STREAM, 0);
 	if (fd_ < 0) {
-		perror("ERROR: failed to create a socket");
+		throw std::runtime_error("Failed to create a socket");
 		return 0;
 	}
 
@@ -23,7 +23,7 @@ int ServerClientSocket::Init(std::string ip, int port) {
 	addr.sin_port = htons(port);
 
 	if ((connect(fd_, (struct sockaddr *) &addr, sizeof(addr))) < 0) {
-		perror("ERROR: failed to connectin client Stub");
+		throw std::runtime_error("Failed to create a socket");
 		return 0;
 	}
 	is_initialized_ = true;

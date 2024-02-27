@@ -7,13 +7,17 @@
 #include "ServerClientStub.h"
 
 int ServerClientStub::Init(std::string ip, int port) {
-	return socket.Init(ip, port);	
+    try {
+	    return socket.Init(ip, port);
+    }
+    catch (const std::runtime_error& e){
+        
+        return 0;
+    }	
 }
 
 bool ServerClientStub::sendUpdate(CustomerRequests request) {
     char buffer[64];
-	int size;
     request.Marshal(buffer);
-	size = request.Size();
 	return socket.Send(buffer, request.Size(), 0);
 }

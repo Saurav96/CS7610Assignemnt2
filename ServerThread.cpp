@@ -1,6 +1,10 @@
 #include <iostream>
 #include <memory>
 #include "ServerThread.h"
+/*
+Craeting Regualar Laptops,
+
+*/
 LaptopInfo LaptopFactory::CreateRegularLaptop(CustomerRequests order, int engineer_id){
 	LaptopInfo laptop;
 	laptop.CopyOrder(order);
@@ -74,8 +78,6 @@ EngineerThread(std::unique_ptr<ServerSocket> socket, int id) {
 	stub.Init(std::move(socket));
 	while (true) {
 		request = stub.ReceiveRequest();
-		//std::cout<<"request Received " << request.GetReplication().getFactoryId()<<std::endl;
-		//std::cout<<"Customer ID" <<request.GetCustomerId()<<std::endl;
 		if (!request.IsValid()) {
 			break;	
 		}
@@ -156,17 +158,25 @@ void LaptopFactory::AdminThread(int id) {
 			}
 			replicationPeer.setFactoryId(peerID);
 			replicationPeer.setPrimaryId(unique_id);
-			std::cout<<_stateMachineLog.size()-1<<std::endl;
 			replicationPeer.setLastIndex(_stateMachineLog.size()-1);
 			objPeer = obj;
 			requestPeer.SetOrder(peerID, orderNumber,  requestType, 1, objPeer, replicationPeer );
-			if(stub.Init(ip, port))
-			{
-				if(stub.sendUpdate(requestPeer))
-				{
+			try {
+				if(stub.Init(ip, port))
+				{	
+
+					if(stub.sendUpdate(requestPeer))
+					{
 					//std::cout<<"Successful"<<std::endl;
+					}
 				}
 			}
+			catch (const std::runtime_error& e)
+			{
+				return;
+			}
+			
+			
 		}
 		
 		updateCustomerRecordOnMap(obj);
@@ -196,14 +206,13 @@ void LaptopFactory::processReplicationRequest(CustomerRequests request){
 	}
 	
 	if(replication.getPrimaryId() != -1 && replication.getPrimaryId() != request.GetReplication().getPrimaryId()){
-		std::cout<<"coming insde here"<<std::endl;
 		MapOp tempObj = _stateMachineLog[replication.getLastIndex()];
 		std::lock_guard<std::mutex> map_guard(_map_mutex);
 		_customerRecords[tempObj.GetArg1()] = tempObj.GetArg2();
 		replication.setCommitedIndex(replication.getLastIndex());
 		replication.setPrimaryId(request.GetReplication().getPrimaryId());
 	}
-	std::cout<<replication.getCommitedIndex()<<" commited"<<replication.getLastIndex()<<std::endl;
+
 	if(replication.getLastIndex() != -1) {
 		MapOp tempObj = _stateMachineLog[replication.getLastIndex()];
 		std::lock_guard<std::mutex> map_guard(_map_mutex);
