@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	std::unique_ptr<ServerSocket> new_socket;
 	std::vector<std::thread> thread_vector;
 	
-	 if (argc < 5) {
+	 if (argc < 4) {
         std::cerr << "Usage: " << argv[0] << " [port #] [unique ID] [# peers] (repeat [ID] [IP] [port #])\n";
         return 1;
     }

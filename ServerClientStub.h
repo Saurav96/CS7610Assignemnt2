@@ -14,10 +14,6 @@ public:
     ServerClientStub(){};
     int Init(std::string ip, int port);
     bool sendUpdate(CustomerRequests request);
-    /*
-    bool sendData(ServerReplication data);
-    std::string receiveData();
-    */
 };
 
 #endif // SERVERCLIENTSTUB_H
