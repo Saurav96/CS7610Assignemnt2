@@ -22,9 +22,10 @@ int main(int argc, char *argv[]) {
 	port = atoi(argv[1]);
 	unique_id = atoi(argv[2]);
 	peer = atoi(argv[3]);
-
+	// The Current Server is also a peer for some other, hence appending it.
 	PeerInfo obj1(unique_id, "127.0.0.1", port);
 	ifaAddresses.emplace_back(obj1);
+	//iterate over argc to create new peer types
 	for(int i = 0;i< peer;++i){
 		int peerIndex = 4 + i*3;
 		if(peerIndex+2 < argc+1){

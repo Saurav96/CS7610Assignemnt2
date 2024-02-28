@@ -35,6 +35,7 @@ LaptopInfo LaptopFactory::updateRecord(CustomerRequests record, int engineer_id)
 
 }
 
+//Fetch the customer data, if not found, set it to -1
 Customer_Record LaptopFactory::FetchCustomerRecord(int customer_id){
 	Customer_Record record;
 	if(_customerRecords.find(customer_id) == _customerRecords.end()){
@@ -47,6 +48,7 @@ Customer_Record LaptopFactory::FetchCustomerRecord(int customer_id){
 	return record;
 }
 
+//Create a new Log record
 void LaptopFactory::createLogRecord(LaptopInfo info){
 	
 	obj.SetOpcode(1);
@@ -54,15 +56,14 @@ void LaptopFactory::createLogRecord(LaptopInfo info){
 	obj.SetArg2(info.GetOrderNumber());
 	
 }
-
+//Updates the log
 void LaptopFactory::updateCustomerRecordOnLog(MapOp obj){
 	std::lock_guard<std::mutex> vector_guard(_vector_mutex);
 	_stateMachineLog.emplace_back(obj);
-	replication.setLastIndex(_stateMachineLog.size()-1);
-	
-
-
+	replication.setLastIndex(_stateMachineLog.size()-1);	
 }
+
+//updates the Map Structure
 void LaptopFactory::updateCustomerRecordOnMap(MapOp obj){
 	std::lock_guard<std::mutex> map_guard(_map_mutex);
 	_customerRecords[obj.GetArg1()] = obj.GetArg2();
@@ -121,9 +122,11 @@ void LaptopFactory::AdminThread(int id) {
 		auto req = std::move(adminQueue.front());
 		adminQueue.pop();
 		ul.unlock();
+		// Gets the Customer details
 		int getCustomerId = req->laptop.GetCustomerId();
 		int orderNumber = req->laptop.GetOrderNumber();
 		int requestType = req->laptop.GetRequestType();
+		//Create a new mapOb Type
 		obj.SetArg1(getCustomerId);
 		obj.SetArg2(orderNumber);
 		createLogRecord(req->laptop);		
@@ -131,9 +134,11 @@ void LaptopFactory::AdminThread(int id) {
 		//Updates the Primary
 		if((replication.getPrimaryId() == -1) || (replication.getPrimaryId() != unique_id))
 		{
+				//if its a first request, set primary
 				if(_stateMachineLog.size() == 0){
 					replication.setPrimaryId(unique_id);
 				}
+				// If the primary is updated by client, update the logs and sets a new primary
 				else{
 					MapOp tempObj = _stateMachineLog[replication.getLastIndex()];
 					std::lock_guard<std::mutex> map_guard(_map_mutex);
@@ -143,6 +148,7 @@ void LaptopFactory::AdminThread(int id) {
 				}
 		}
 	
+		//update the Log file
 		updateCustomerRecordOnLog(obj);
 		CustomerRequests requestPeer;
 		ServerReplication replicationPeer;
@@ -156,10 +162,12 @@ void LaptopFactory::AdminThread(int id) {
 			if(peerID == unique_id){
 				continue;
 			}
+			//Set Factory and primary Id for replicas
 			replicationPeer.setFactoryId(peerID);
 			replicationPeer.setPrimaryId(unique_id);
 			replicationPeer.setLastIndex(_stateMachineLog.size()-1);
 			objPeer = obj;
+			//Create a replica request
 			requestPeer.SetOrder(peerID, orderNumber,  requestType, 1, objPeer, replicationPeer );
 			try {
 				if(stub.Init(ip, port))
@@ -178,8 +186,9 @@ void LaptopFactory::AdminThread(int id) {
 			
 			
 		}
-		
+		//Update the Map
 		updateCustomerRecordOnMap(obj);
+		//Set admin ID
 		req->laptop.SetAdminId(id);
 		req->prom.set_value(req->laptop);
 
@@ -196,15 +205,17 @@ bool LaptopFactory::isReplication(CustomerRequests request){
 
 void LaptopFactory::processReplicationRequest(CustomerRequests request){
 
-
+	//If Ids are not set, set it
 	if(replication.getFactoryId() == -1){
 		replication.setFactoryId(unique_id);
 	}
 
+	//Set the PrimaryId for Replicas
 	if(replication.getPrimaryId()  == -1 ){
 		replication.setPrimaryId(request.GetReplication().getPrimaryId());
 	}
 	
+	//If its a new Call where primary is not set, set it.
 	if(replication.getPrimaryId() != -1 && replication.getPrimaryId() != request.GetReplication().getPrimaryId()){
 		MapOp tempObj = _stateMachineLog[replication.getLastIndex()];
 		std::lock_guard<std::mutex> map_guard(_map_mutex);
@@ -213,12 +224,15 @@ void LaptopFactory::processReplicationRequest(CustomerRequests request){
 		replication.setPrimaryId(request.GetReplication().getPrimaryId());
 	}
 
+	//Append the getLastIndex and GetCommitedIndex for all request other than first for replicas
 	if(replication.getLastIndex() != -1) {
 		MapOp tempObj = _stateMachineLog[replication.getLastIndex()];
 		std::lock_guard<std::mutex> map_guard(_map_mutex);
 		_customerRecords[tempObj.GetArg1()] = tempObj.GetArg2();
 		replication.setCommitedIndex(replication.getCommitedIndex());
 	}
+
+	//Updates logs for Replicas
 	replication.setLastIndex(request.GetReplication().getLastIndex());
 	replication.setCommitedIndex(request.GetReplication().getLastIndex()-1);
 	MapOp obj1 = request.GetMapObj();

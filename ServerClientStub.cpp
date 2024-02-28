@@ -16,6 +16,7 @@ int ServerClientStub::Init(std::string ip, int port) {
     }	
 }
 
+//To send Update to Replicas
 bool ServerClientStub::sendUpdate(CustomerRequests request) {
     char buffer[64];
     request.Marshal(buffer);
