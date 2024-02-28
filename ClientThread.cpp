@@ -21,7 +21,7 @@ ThreadBody(std::string ip, int port, int id, int orders, int type) {
 		std::cerr << " Oops!! Server is  Down" << e.what() << std::endl;
 		return;
 	}
-	
+
 	//Request type 1 is to update the records in System
 	if (request_type == 1) { 
 
@@ -46,7 +46,7 @@ ThreadBody(std::string ip, int port, int id, int orders, int type) {
 			CustomerRequests request;
 			MapOp obj;
 			ServerReplication replication;
-        	request.SetOrder(customer_id, -1, request_type,0, obj, replication);
+        	request.SetOrder(num_orders, -1, request_type,0, obj, replication);
         	Customer_Record record = stub.ReadRecord(request); 
 			if(!record.IsValid()){
 				std::cout<<"Invalid Record for Customer" <<customer_id <<std::endl;
@@ -54,9 +54,10 @@ ThreadBody(std::string ip, int port, int id, int orders, int type) {
 			std::cout<<"The value of customer "<< record.GetCustomerId() <<" is " <<record.GetLastOrder()<<std::endl;
 	}
 
+	
 	//Request Type 3 is just printing
 	else if(request_type == 3){
-		for(int i=id;i<=num_orders;++i){
+		for(int i=0;i<=num_orders;++i){
 			
 			CustomerRequests request;
 			MapOp obj;

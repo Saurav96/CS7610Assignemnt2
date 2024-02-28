@@ -37,6 +37,12 @@ Added type_of_request as a paramater, the main reason to add if I am doing serve
 
 Added ServerClientSocket and ServerClientStub to handle communication for "Replication".
 
+## Part 3:-
+
+Added Try-Catch Block to handle Fail Cases
+
+
+
 ## Running for One Server 
 have to Give Unique Id and Number of peers :- 0
 ./server 123456 0 0

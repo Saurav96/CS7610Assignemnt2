@@ -39,6 +39,12 @@ int main(int argc, char *argv[]) {
 	if(laptop_type == 3){
 		customer_id = 1;
 	}
+
+	if(laptop_type == 2){
+		num_orders = customer_id;
+		customer_id = 1;
+	}
+	
 	for(int i =1;i<=customer_id;++i){
 		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
 		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
