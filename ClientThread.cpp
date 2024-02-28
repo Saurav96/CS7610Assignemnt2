@@ -56,7 +56,8 @@ ThreadBody(std::string ip, int port, int id, int orders, int type) {
 
 	//Request Type 3 is just printing
 	else if(request_type == 3){
-		for(int i=id;i<=orders;++i){
+		for(int i=id;i<=num_orders;++i){
+			
 			CustomerRequests request;
 			MapOp obj;
 			ServerReplication replication;

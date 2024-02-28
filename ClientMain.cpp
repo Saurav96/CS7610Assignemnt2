@@ -36,6 +36,9 @@ int main(int argc, char *argv[]) {
 
 	timer.Start();
 	//Iterating for numbe rof customers
+	if(laptop_type == 3){
+		customer_id = 1;
+	}
 	for(int i =1;i<=customer_id;++i){
 		auto client_cls = std::shared_ptr<ClientThreadClass>(new ClientThreadClass());
 		std::thread client_thread(&ClientThreadClass::ThreadBody, client_cls,
@@ -44,7 +47,7 @@ int main(int argc, char *argv[]) {
 		client_vector.push_back(std::move(client_cls));
 		thread_vector.push_back(std::move(client_thread));
 	}
-	
+
 	for (auto& th : thread_vector) {
 		th.join();
 	}
